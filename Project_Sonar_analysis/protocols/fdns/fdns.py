@@ -10,6 +10,7 @@ def get_df_hostname_specified(df, host_name):
         :param host_name: string contains the complete host name
         :return df_final: Dataframe object
     """
+    #df_final = hand_module.pd.DataFrame()
     df_final = hand_module.pd.DataFrame()
     df_final = df[df['Domain'].str.endswith(host_name)]
     return df_final

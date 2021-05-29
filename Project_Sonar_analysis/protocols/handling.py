@@ -1,4 +1,6 @@
 #Module to handle Project Sonar dataset.
+
+#import dask.dataframe as dd
 import pandas as pd
 import math
 import re
@@ -18,7 +20,9 @@ def get_df(path, type_compression, str_arr, sepa):
         :param sepa: character contains attributes separator
         :return df: DataFrame object
     """
-    df = pd.read_csv(path, compression = type_compression, header = None, names = str_arr, sep = sepa)
+    df = pd.read_csv(path, compression = type_compression, header = None, names = str_arr, sep = sepa, dtype = str)
+    #df = dd.read_csv(path, compression = type_compression, header = None, names = str_arr, sep = sepa, dtype = str)
+    #df = df.compute()
     return df
 
 
@@ -95,6 +99,7 @@ def get_df_timestamp_changed(df, attr):
         :return df: DataFrame object
     """
     df[attr] = pd.to_datetime(df['Date'], unit = 's')
+    #df[attr] = dd.to_datetime(df['Date'], unit = 's')
     return df
 
 
@@ -152,10 +157,12 @@ def get_df_attributes_added(df, attr_lst, lst_type):
         :param df: DataFrame object
         :param attr_lst: string list contains attribute names
         :param lst_type: string contains the attribute type
+        :return df_final: DataFrame object
     """
-    for i in attr_lst:
-        df[i] = pd.Series(dtype = lst_type)
-    return df
+    df_new = pd.DataFrame(None, columns = attr_lst)    
+    df_new.astype(lst_type).dtypes
+    df_final = pd.concat([df, df_new])
+    return df_final
 
 
 def get_df_attributes_merged(df_1, df_2, df_1_attribute, df_2_attribute, merge_type):
@@ -170,10 +177,22 @@ def get_df_attributes_merged(df_1, df_2, df_1_attribute, df_2_attribute, merge_t
         :param merge_type: string contains the merge type
         :return df_final: Dataframe object
     """
-    if df1_attribute != df_2_attribute:
+    if df_1_attribute != df_2_attribute:
         df_2 = get_df_attribute_renamed(df_2, df_2_attribute, df_1_attribute)
     df_final = df_1.merge(df_2, on = df_1_attribute, how = merge_type)
     return df_final
+
+
+def get_df_data_concatenated(df_list, join_type):
+    """
+    Getting a dataframe which contains all values from concat operation and dropping duplicated values.
+    
+        :param df_list: DataFrame list
+        :param join_type: string value contains the join type
+        :return df: DataFrame object
+    """
+    df = pd.concat(df_list, join = join_type).drop_duplicates().reset_index(drop=True)
+    return df
 
 
 def get_df_invalid_ip_removed(df, attr):
@@ -188,7 +207,7 @@ def get_df_invalid_ip_removed(df, attr):
         try:
             ipaddress.ip_address(item)
         except ValueError:
-            df.drop([index], inplace = True)
+            df.drop(df.index[index], axis = 1, inplace = True)
     return df
 
 
@@ -202,8 +221,8 @@ def get_df_ip_geolocated(mm_db, ip_list):
     """
     NEW_ATTRIBUTE_LST = ['Ip', 'City', 'Continent', 'Country', 'Location', 'Postal', 'Reg_country', 'Subdivisions']
     df_from_maxminddb = mx.open_database(mm_db)
-    df_ip_loc = hand_module.pd.DataFrame()
-    df_ip_loc = hand_module.get_df_attributes_added(df_ip_loc, NEW_ATTRIBUTE_LST, str)
+    df_ip_loc = pd.DataFrame()
+    df_ip_loc = get_df_attributes_added(df_ip_loc, NEW_ATTRIBUTE_LST, str)
     df_ip_loc['Ip'] = ip_list
     for index, item in enumerate(df_ip_loc['Ip']):
         df_single_ip = df_from_maxminddb.get(item)
@@ -224,14 +243,14 @@ def get_df_ip_geolocated(mm_db, ip_list):
                 df_ip_loc['Reg_country'][index] = j
             elif 'subdivisions' in j:
                 df_ip_loc['Subdivisions'][index] = j
-    df_ip_loc = hand_module.get_df_string_extracted(df_ip_loc, 'City', 'City', "\"en\": \"", "\",", 1)
-    df_ip_loc = hand_module.get_df_string_extracted(df_ip_loc, 'Continent', 'Continent', "\"en\": \"", "\",", 1)
-    df_ip_loc = hand_module.get_df_string_extracted(df_ip_loc, 'Country', 'Country', "\"en\": \"", "\",", 1)
-    df_ip_loc = hand_module.get_df_string_extracted(df_ip_loc, 'Location', 'Long', "\"longitude\": \"", ",", 1)
-    df_ip_loc = hand_module.get_df_string_extracted(df_ip_loc, 'Location', 'Lat', "\"latitude\": \"", ",", 1)
-    df_ip_loc = hand_module.get_df_string_extracted(df_ip_loc, 'Postal', 'Postal', "{\"code\": \"", "\"", 1)
-    df_ip_loc = hand_module.get_df_string_extracted(df_ip_loc, 'Reg_country', 'Reg_country', "\"en\": \"", "\",", 1)
-    df_ip_loc = hand_module.get_df_string_extracted(df_ip_loc, 'Subdivisions', 'Subdivisions', "\"en\": \"", "\",", 1)
+    df_ip_loc = get_df_string_extracted(df_ip_loc, 'City', 'City', "\"en\": \"", "\",", 1)
+    df_ip_loc = get_df_string_extracted(df_ip_loc, 'Continent', 'Continent', "\"en\": \"", "\",", 1)
+    df_ip_loc = get_df_string_extracted(df_ip_loc, 'Country', 'Country', "\"en\": \"", "\",", 1)
+    df_ip_loc = get_df_string_extracted(df_ip_loc, 'Location', 'Long', "\"longitude\": \"", ",", 1)
+    df_ip_loc = get_df_string_extracted(df_ip_loc, 'Location', 'Lat', "\"latitude\": \"", ",", 1)
+    df_ip_loc = get_df_string_extracted(df_ip_loc, 'Postal', 'Postal', "{\"code\": \"", "\"", 1)
+    df_ip_loc = get_df_string_extracted(df_ip_loc, 'Reg_country', 'Reg_country', "\"en\": \"", "\",", 1)
+    df_ip_loc = get_df_string_extracted(df_ip_loc, 'Subdivisions', 'Subdivisions', "\"en\": \"", "\",", 1)
     df_ip_loc.drop(['Location'], axis=1)
     return df_ip_loc
 
@@ -244,7 +263,7 @@ def obtain_map_ip_localized(mm_db, ip_list):
         :param ip_list: string list which contains ip-addresses to localize
         :return ip_map: Map object 
     """
-    df_ip_loc = get_dfgeolocation_ip(mm_db, ip_list) 
+    df_ip_loc = get_df_ip_geolocated(mm_db, ip_list) 
     ip_map = Map(basemap = basemaps.Esri.WorldStreetMap, zoom = 2, min_zoom = 2)
     control = FullScreenControl()
     measure = MeasureControl(position = 'topleft', active_color = 'red', primary_length_unit = 'miles')
@@ -255,7 +274,7 @@ def obtain_map_ip_localized(mm_db, ip_list):
             ip = df_ip_loc.at[index, 'Ip']
             city_name = df_ip_loc.at[index, 'City']
             country_name = df_ip_loc.at[index, 'Country']
-            marker = Marker(location = [lat.iat[0], lng.iat[0]], title = f"{ip}, {city_name}, {country_name}")
+            marker = Marker(location = [lat.iat[0], lng.iat[0]], title = "{ip}, {city_name}, {country_name}")
             ip_map.add_layer(marker)
     ip_map.add_control(control)
     ip_map.add_control(measure)

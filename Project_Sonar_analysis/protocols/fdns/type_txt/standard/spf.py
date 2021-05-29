@@ -152,7 +152,7 @@ def get_df_ip_info_extracted(df_spf, string_df_value, split_string, index_loop, 
                 list_mechanism.append(tmp_list_mechanism)
             except:
                 pass
-        df_spf.iat[index_loop, df_spf.columns.get_loc(VERSION_2 + 'ADDRESS')] = ip_addresses
+        df_spf.at[index_loop, VERSION_2 + 'ADDRESS'] = ip_addresses
         df_spf.iat[index_loop, df_spf.columns.get_loc(VERSION_2 + 'MECHANISM')] = list_mechanism
         df_spf.iat[index_loop, df_spf.columns.get_loc(VERSION_2 + 'QUALIFIERS')] = list_qualifiers
     return df_spf        

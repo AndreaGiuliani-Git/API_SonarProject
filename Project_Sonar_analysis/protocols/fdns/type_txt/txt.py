@@ -9,7 +9,7 @@ def get_df_txt(path):
         :param path: string contains the fdns database txt-type path
         :return df_txt: Dataframe_txt object
     """
-    df = fdns_module.hand_module.get_df(path, 'gzip', ['Date', 'Domain', 'Type', 'Value'], ',')
+    df = fdns_module.hand_module.get_df(path, None, ['Date', 'Domain', 'Type', 'Value'], ',')
     df_txt = get_df_values_cleaned(df)
     df_txt.drop(df_txt[(df_txt.Type != 'txt')].index, axis=0, inplace=True)
     df_txt.drop(['Type'], axis=1, inplace=True)

@@ -43,5 +43,5 @@ def get_df_dkim(path):
             df_dkim.iat[index, df_dkim.columns.get_loc('SERVICE')] = tmp_service.group(0)
         if tmp_note:
             df_dkim.iat[index, df_dkim.columns.get_loc('NOTE')] = tmp_note.group(0)
-    df_dkim.drop(['Value'], axis = 1, inplace = True)
+    df_dkim.drop(['Value'], axis = 1, inplace = True)  
     return df_dkim

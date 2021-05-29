@@ -10,7 +10,7 @@ def get_df_a(path):
         :return df_a: Dataframe_a object
     
     """
-    df = fdns_module.hand_module.get_df(path, 'gzip', ['Date', 'Domain', 'Type', 'Value'], ',')
+    df = fdns_module.hand_module.get_df(path, None, ['Date', 'Domain', 'Type', 'Value'], ',')
     df_a = get_df_values_cleaned(df)
     df_a = fdns_module.hand_module.get_df_attribute_renamed(df_a, 'Value', 'Ip')
     df_a = fdns_module.hand_module.get_df_chars_replaced(df_a, 'Ip', 'Ip', ["\"value\":\"", "}"])
