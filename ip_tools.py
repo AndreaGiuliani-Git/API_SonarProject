@@ -4,7 +4,7 @@ import pandas as pd
 
 def find_ip_in_network(ip_list, network):
     """
-    Finding all ip-address inside the specified network in ip_list.
+    Find all ip-address inside the specified network in ip_list.
     
         :param ip_list: string list contains ip-addresses
         :param network: string contains the network address
@@ -21,7 +21,7 @@ def find_ip_in_network(ip_list, network):
     
 def get_df_ip_info_collected(ip_list):
     """
-    Getting a dataframe with some information about ip-addresses. More information at 
+    Get a dataframe with some information about ip-addresses. More information at 
     the link: https://docs.python.org/3/library/ipaddress.html.
     
         :param ip_list: string list contains ip-addresses

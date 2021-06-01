@@ -4,7 +4,7 @@ import protocols.handling as hand_module
 
 def get_df_tcp(path):
     """
-    Getting a dataframe tcp records.
+    Get a dataframe tcp records.
     
         :param path: string contains the tcp database path
         :return df_tcp: Dataframe_tcp object
@@ -20,7 +20,7 @@ def get_df_tcp(path):
     
 def get_df_ip_selected(df, ip_attr, ip_address_list, flag):
     """
-    Getting a dataframe which contains all ip-address matched in 'Ip' attribute in the dataframe.
+    Get a dataframe which contains all ip-address matched in 'Ip' attribute in the dataframe.
     The flag value must be 0 or 1.
     0 = getting dataframe with all attributes from df_tcp.
     1 = getting dataframe with only 'S_address' and 'S_port' attributes from df_tcp.

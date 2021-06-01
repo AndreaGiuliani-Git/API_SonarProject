@@ -4,7 +4,7 @@ import protocols.fdns.fdns as fdns_module
 
 def get_df_a(path):
     """
-    Getting a dataframe fdns records a-type.
+    Get a dataframe fdns records a-type.
         
         :param path: string contains the fdns database a-type path
         :return df_a: Dataframe_a object
@@ -23,7 +23,7 @@ def get_df_a(path):
 
 def get_df_values_cleaned(df_a):
     """
-    Getting a dataframe without unnecessary characters.
+    Get a dataframe without unnecessary characters.
     
         :param df_txt: Dataframe_a object
         :return df_txt: Dataframe_a object
@@ -39,7 +39,7 @@ def get_df_values_cleaned(df_a):
 
 def get_df_ip_freq_grouped_by_country(df, df_ip_loc):
     """
-    Getting a dataframe which contains grouped rows by country and counted ip frequency.
+    Get a dataframe which contains grouped rows by country and counted ip frequency.
 
         :param df: DataFrame object
         :param df_ip_loc: Dataframe_ip_loc object
@@ -52,7 +52,7 @@ def get_df_ip_freq_grouped_by_country(df, df_ip_loc):
 
 def get_df_subdomain_freq_grouped_by_ip(df, df_ip_loc):
     """
-    Getting a dataframe which contains grouped rows by ip-address and counted subdomains frequency.
+    Get a dataframe which contains grouped rows by ip-address and counted subdomains frequency.
 
         :param df: DataFrame object
         :param df_ip_loc: Dataframe_ip_loc object
@@ -65,7 +65,7 @@ def get_df_subdomain_freq_grouped_by_ip(df, df_ip_loc):
 
 def get_df_ip_freq_grouped_by_subdivisions(df, df_ip_loc):
     """
-    Getting a dataframe which contains grouped rows by ip-address and counted subdomains frequency.
+    Get a dataframe which contains grouped rows by ip-address and counted subdomains frequency.
 
         :param df: DataFrame object
         :param df_ip_loc: Dataframe_ip_loc object
@@ -78,7 +78,7 @@ def get_df_ip_freq_grouped_by_subdivisions(df, df_ip_loc):
 
 def get_df_ip_selected(df, ip_address_list):
     """
-    Getting a dataframe which contains all ip-address matched in 'Ip' attribute in the dataframe.
+    Get a dataframe which contains all ip-address matched in 'Ip' attribute in the dataframe.
     
         :param df: Dataframe object
         :param ip_address_list: string list contains the ip-address to search
@@ -93,7 +93,7 @@ def get_df_ip_selected(df, ip_address_list):
 
 def obtain_common_subdomain(subdomain_list):
     """
-    Obtaining a most common subdomain list.
+    Obtain a most common subdomain list.
 
         :param subdomain_list: string list which contains most common subdomains
         :return most_com_sub: list of most common subdomain names

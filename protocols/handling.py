@@ -12,7 +12,7 @@ pd.options.mode.chained_assignment = None
 
 def get_df(path, type_compression, str_arr, sepa):
     """
-    Getting dataframe from dataset through its path.
+    Get dataframe from dataset through its path.
 
         :param path: string contains the path of the dataset
         :param type_compression: string contains the compression type
@@ -21,14 +21,12 @@ def get_df(path, type_compression, str_arr, sepa):
         :return df: DataFrame object
     """
     df = pd.read_csv(path, compression = type_compression, header = None, names = str_arr, sep = sepa, dtype = str)
-    #df = dd.read_csv(path, compression = type_compression, header = None, names = str_arr, sep = sepa, dtype = str)
-    #df = df.compute()
     return df
 
 
 def get_df_chars_replaced(df, attr1, attr2, str_arr):
     """
-    Getting a dataframe with a target attribute obtained from replacing specific characters by a source attribute.
+    Get a dataframe with a target attribute obtained from replacing specific characters by a source attribute.
     
         :param df: DataFrame object
         :param attr1: string contains the source attribute 
@@ -42,7 +40,7 @@ def get_df_chars_replaced(df, attr1, attr2, str_arr):
 
 def get_df_string_extracted(df, attr1, attr2, prev_str, next_str, flag):
     """
-    Getting a dataframe with a target attribute obtained by extracting specific string in a source attribute.The flag
+    Get a dataframe with a target attribute obtained by extracting specific string in a source attribute.The flag
     value must be 0 or 1.
     0 = extract with previous string
     1 = extract with previous and next string
@@ -64,7 +62,7 @@ def get_df_string_extracted(df, attr1, attr2, prev_str, next_str, flag):
 
 def find_string(pattern, string):
     """
-    Finding a pattern in a string.
+    Find a pattern in a string.
     
         :param pattern: string to search for
         :param string: string where to search
@@ -79,7 +77,7 @@ def find_string(pattern, string):
 
 def get_df_attribute_renamed(df, old_name, new_name):
     """
-    Getting a dataframe with a renaming specific attribute.
+    Get a dataframe with a renaming specific attribute.
     
         :param df: DataFrame object
         :param old_name: string name
@@ -92,20 +90,19 @@ def get_df_attribute_renamed(df, old_name, new_name):
 
 def get_df_timestamp_changed(df, attr):
     """
-    Getting dataframe with 'timestamp' attribute in date format.
+    Get dataframe with 'timestamp' attribute in date format.
 
         :param df: DataFrame object
         :param attr: string contains the attribute which contains timestamp value
         :return df: DataFrame object
     """
     df[attr] = pd.to_datetime(df['Date'], unit = 's')
-    #df[attr] = dd.to_datetime(df['Date'], unit = 's')
     return df
 
 
 def get_df_rows_filtered(df, attr, pattern, reg_ex, flag):
     """
-    Getting a dataframe filtered.The flag value must be 0 or 1.
+    Get a dataframe filtered.The flag value must be 0 or 1.
     0 = filter with equal operator
     1 = filter with contains function
     
@@ -125,7 +122,7 @@ def get_df_rows_filtered(df, attr, pattern, reg_ex, flag):
     
 def obtain_range_max_min_value(df, attr):
     """
-    Obtaining the difference between the last and the first value in a specific attribute.
+    Obtain the difference between the last and the first value in a specific attribute.
 
         :param df: DataFrame object
         :param attr: string contains the attribute which calculates the difference
@@ -137,7 +134,7 @@ def obtain_range_max_min_value(df, attr):
 
 def get_df_attributes_grouped_by(df, group_by_vect, attr1, attr2):
     """
-    Getting a dataframe grouping by an attribute vector.
+    Get a dataframe grouping by an attribute vector.
 
         :param df: DataFrame object
         :param group_by_vect: strings vector contains the attributes considered in the grouping
@@ -152,7 +149,7 @@ def get_df_attributes_grouped_by(df, group_by_vect, attr1, attr2):
 
 def get_df_attributes_added(df, attr_lst, lst_type):
     """
-    Getting a dataframe with new specific type columns.The value "lst_type" must be object, str, float, double or int.
+    Get a dataframe with new specific type columns.The value "lst_type" must be object, str, float, double or int.
     
         :param df: DataFrame object
         :param attr_lst: string list contains attribute names
@@ -167,7 +164,7 @@ def get_df_attributes_added(df, attr_lst, lst_type):
 
 def get_df_attributes_merged(df_1, df_2, df_1_attribute, df_2_attribute, merge_type):
     """
-    Getting a dataframe obtained by merging two dataframe. The value "merge_type" must be inner, left, right, outer or cross
+    Get a dataframe obtained by merging two dataframe. The value "merge_type" must be inner, left, right, outer or cross
     and the default value is inner.
     
         :param df_1: Dataframe object
@@ -185,7 +182,7 @@ def get_df_attributes_merged(df_1, df_2, df_1_attribute, df_2_attribute, merge_t
 
 def get_df_data_concatenated(df_list, join_type):
     """
-    Getting a dataframe which contains all values from concat operation and dropping duplicated values.
+    Get a dataframe which contains all values from concat operation and dropping duplicated values.
     
         :param df_list: DataFrame list
         :param join_type: string value contains the join type
@@ -197,7 +194,7 @@ def get_df_data_concatenated(df_list, join_type):
 
 def get_df_invalid_ip_removed(df, attr):
     """
-    Getting a dataframe without invalid ip-address from a dataframe which contains an ip-address attribute.
+    Get a dataframe without invalid ip-address from a dataframe which contains an ip-address attribute.
     
         :param df: DataFrame object
         :param attr: string contains the attribute name which contains ip values
@@ -213,7 +210,7 @@ def get_df_invalid_ip_removed(df, attr):
 
 def get_df_ip_geolocated(mm_db, ip_list):
     """
-    Getting a dataframe from maxminddb which contains some location ip informations.
+    Get a dataframe from maxminddb which contains some location ip informations.
     
         :param mm_db: Database object from maxmind project (GEOLITE2-CITY)
         :param ip_list: strings list contains ip address
@@ -257,7 +254,7 @@ def get_df_ip_geolocated(mm_db, ip_list):
 
 def obtain_map_ip_localized(mm_db, ip_list):
     """
-    Obtaining a localize map of ip-addresses in the ip_list.
+    Obtain a localize map of ip-addresses in the ip_list.
 
         :param mm_db: Database objectfrom maxminddb project (GEOLITE2-CITY)
         :param ip_list: string list which contains ip-addresses to localize

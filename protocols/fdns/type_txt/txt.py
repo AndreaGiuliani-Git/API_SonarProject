@@ -4,7 +4,7 @@ import protocols.fdns.fdns as fdns_module
 
 def get_df_txt(path):
     """
-    Getting a dataframe fdns records txt-type.
+    Get a dataframe fdns records txt-type.
     
         :param path: string contains the fdns database txt-type path
         :return df_txt: Dataframe_txt object
@@ -18,7 +18,7 @@ def get_df_txt(path):
 
 def get_df_values_cleaned(df_txt):
     """
-    Getting a dataframe without unnecessary characters.
+    Get a dataframe without unnecessary characters.
     
         :param df_txt: Dataframe_txt object
         :return df_txt: Dataframe_txt object
@@ -34,7 +34,7 @@ def get_df_values_cleaned(df_txt):
 
 def obtain_domain_expired(df_txt):
     """
-    Obtaining string contains expired domains.
+    Obtain string contains expired domains.
     
         :param df_txt: Dataframe_txt object
         :return str_dom: string contains domains
@@ -46,7 +46,7 @@ def obtain_domain_expired(df_txt):
 
 def obtain_domain_with_mta_sts(df_txt):
     """
-    Obtaining string contains domains that use standard MTA-STS.
+    Obtain string contains domains that use standard MTA-STS.
     
         :param df_txt: Dataframe_txt object
         :return str_dom: string contains domains
@@ -54,3 +54,24 @@ def obtain_domain_with_mta_sts(df_txt):
     df_txt.loc[df_txt['Domain'].str.contains('_mta-sts', flags=re.IGNORECASE)]  
     str_dom = df_txt['Domain'].to_string()
     return str_dom
+
+
+def get_df_new_values_assigned(df_txt, df_txt_index, value_lst, dictionary):
+    """
+    Get a dataframe with inserted new value into new attributes dataframe.
+    
+        :param df_txt: Dataframe_txt object
+        :param df_txt_index: int value to get index of dataframe
+        :param value_lst: object list which contains value to insert in dataframe
+        :param dictionary: dict object which contains default values for each attribute
+        :return df_txt: Dataframe_txt object
+    """
+    key_list = list(dictionary)
+    for index, item in enumerate(key_list):
+        if not value_lst[index]:
+            df_txt.at[df_txt_index, item] = dictionary[item]
+        if type(value_lst[index]) != list and value_lst[index]:
+            df_txt.at[df_txt_index, item] = value_lst[index].group(0)
+        else:
+            df_txt.at[df_txt_index, item] = value_lst[index]
+    return df_txt

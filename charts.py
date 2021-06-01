@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 
 def scatter_plot_chart(x_data, y_data, x_label, y_label, title):
     """
-    Plotting a scatter chart with the data of dataframe.
+    Plot a scatter chart with the data of dataframe.
 
         :param x_data: data object which use in x axe
         :param y_data: data object which use in y axe

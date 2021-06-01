@@ -4,7 +4,7 @@ import protocols.fdns.type_txt.txt as txt_module
 
 def get_df_spf(path):
     """
-    Getting a dataframe fdns records txt-type with spf standard. The meaning of new attributes is: A = mechanism "A" 
+    Get a dataframe fdns records txt-type with spf standard. The meaning of new attributes is: A = mechanism "A" 
     on the query domain, MX = mechanism "MX" on the query domain, PTR = mechanism "PTR" on the query domain,
     A_REFERENCE_DOMAIN = evaluation of the "A" record about a specified domain, MX_REFERENCE_DOMAIN = evaluation of
     the "MX" record about a specified domain, PTR_REFERENCE_DOMAIN = evaluation of the "PTR" record about a specified
@@ -25,6 +25,16 @@ def get_df_spf(path):
     df_txt = txt_module.get_df_txt(path)
     df_spf = txt_module.fdns_module.hand_module.get_df_rows_filtered(df_txt, 'Value', 'v=spf1', False, 1)
     df_spf = txt_module.fdns_module.hand_module.get_df_attributes_added(df_spf, NEW_ATTRIBUTE_LST , str)
+    dictionary = {
+        'INCLUDE' : txt_module.fdns_module.hand_module.math.nan,
+        'ALL_QUALIFIERS' : '+',
+        'EXISTS' : txt_module.fdns_module.hand_module.math.nan,
+        'REDIRECT' :  txt_module.fdns_module.hand_module.math.nan,
+        'A_REFERENCE_DOMAIN' : txt_module.fdns_module.hand_module.math.nan,
+        'MX_REFERENCE_DOMAIN' : txt_module.fdns_module.hand_module.math.nan,
+        'PTR_REFERENCE_DOMAIN' : txt_module.fdns_module.hand_module.math.nan,
+        'EXPLANATION' :  txt_module.fdns_module.hand_module.math.nan
+    }
     for index, item in enumerate(df_spf['Value']):
         field_list = item.split(" ")
         if not field_list[0].endswith(('}','all')) and item.endswith('}'):
@@ -39,45 +49,16 @@ def get_df_spf(path):
             ptr_reference_domains = txt_module.fdns_module.hand_module.re.findall(r'(?<= )[+-~?]?ptr:.*?(?= )', item)
             mx_reference_domains = txt_module.fdns_module.hand_module.re.findall(r'(?<= )[+-~?]?mx:.*?(?= )', item)
             explanation_domain = txt_module.fdns_module.hand_module.re.search(r'(?<= )exp:.*?(?= )', item)
-            if not include_domains:
-                df_spf.iat[index, df_spf.columns.get_loc('INCLUDE')] = txt_module.fdns_module.hand_module.math.nan
-            else:
-                df_spf.iat[index, df_spf.columns.get_loc('INCLUDE')] = include_domains
-            if not all_qualifier:
-                df_spf.iat[index, df_spf.columns.get_loc('ALL_QUALIFIERS')] = '+'
-            else:
-                df_spf.iat[index, df_spf.columns.get_loc('ALL_QUALIFIERS')] = all_qualifier.group(0)
-            if not exists_domains:
-                df_spf.iat[index, df_spf.columns.get_loc('EXISTS')] = txt_module.fdns_module.hand_module.math.nan           
-            else:
-                df_spf.iat[index, df_spf.columns.get_loc('EXISTS')] = exists_domains
-            if not redirect_domains:
-                df_spf.iat[index, df_spf.columns.get_loc('REDIRECT')] = txt_module.fdns_module.hand_module.math.nan
-            else:
-                df_spf.iat[index, df_spf.columns.get_loc('REDIRECT')] = redirect_domains
-            if not a_reference_domains:
-                df_spf.iat[index, df_spf.columns.get_loc('A_REFERENCE_DOMAIN')] = txt_module.fdns_module.hand_module.math.nan
-            else:
-                df_spf.iat[index, df_spf.columns.get_loc('A_REFERENCE_DOMAIN')] = a_reference_domains
-            if not mx_reference_domains:
-                df_spf.iat[index, df_spf.columns.get_loc('MX_REFERENCE_DOMAIN')] = txt_module.fdns_module.hand_module.math.nan
-            else:
-                df_spf.iat[index, df_spf.columns.get_loc('MX_REFERENCE_DOMAIN')] = mx_reference_domains
-            if not ptr_reference_domains:
-                df_spf.iat[index, df_spf.columns.get_loc('PTR_REFERENCE_DOMAIN')] = txt_module.fdns_module.hand_module.math.nan
-            else:
-                df_spf.iat[index, df_spf.columns.get_loc('PTR_REFERENCE_DOMAIN')] = ptr_reference_domains
-            if not explanation_domain:
-                df_spf.iat[index, df_spf.columns.get_loc('EXPLANATION')] = txt_module.fdns_module.hand_module.math.nan
-            else:
-                df_spf.iat[index, df_spf.columns.get_loc('EXPLANATION')] = explanation_domain.group(0)
+            value_lst = [include_domains, all_qualifier, exists_domains, redirect_domains, a_reference_domains,
+                         mx_reference_domains,  ptr_reference_domains, explanation_domain]
+            df_spf = txt_module.get_df_new_values_assigned(df_spf, index, value_lst, dictionary)         
     df_spf.drop(['Value'], axis=1, inplace=True)
     return df_spf
 
 
 def get_df_mechanism_extracted(df_spf, split_string, index_loop):
     """
-    Getting a dataframe with new three attributes referred to query domain mechanism. They are filled by attribute "Value"
+    Get a dataframe with new three attributes referred to query domain mechanism. They are filled by attribute "Value"
     in df_spf.
     
         :param df_spf: Dataframe_spf object
@@ -112,7 +93,7 @@ def get_df_mechanism_extracted(df_spf, split_string, index_loop):
 
 def get_df_ip_info_extracted(df_spf, string_df_value, split_string, index_loop, ip_version):
     """
-    Getting a dataframe with new three attributes referred to specified ip-addresses. They are filled by attribute "Value"
+    Get a dataframe with new three attributes referred to specified ip-addresses. They are filled by attribute "Value"
     in df_spf. New attributes are create according to the ip_version ("ipv4" or "ipv6").
     
         :param df_spf: Dataframe_spf object
