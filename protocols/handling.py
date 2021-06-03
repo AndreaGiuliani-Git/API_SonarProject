@@ -1,6 +1,4 @@
 #Module to handle Project Sonar dataset.
-
-#import dask.dataframe as dd
 import pandas as pd
 import math
 import re
@@ -10,17 +8,17 @@ import maxminddb as mx
 from ipyleaflet import Map, Marker, basemaps, FullScreenControl, MeasureControl
 pd.options.mode.chained_assignment = None
 
-def get_df(path, type_compression, str_arr, sepa):
+def get_df(path, type_compression, columns_name, sepa):
     """
     Get dataframe from dataset through its path.
 
         :param path: string contains the path of the dataset
         :param type_compression: string contains the compression type
-        :param str_arr: strings array contains the columns name
+        :param columns_name: strings array contains the columns name
         :param sepa: character contains attributes separator
         :return df: DataFrame object
     """
-    df = pd.read_csv(path, compression = type_compression, header = None, names = str_arr, sep = sepa, dtype = str)
+    df = pd.read_csv(path, compression = type_compression, header = None, names = columns_name, sep = sepa, dtype = str)
     return df
 
 
@@ -38,9 +36,9 @@ def get_df_chars_replaced(df, attr1, attr2, str_arr):
     return df
 
 
-def get_df_string_extracted(df, attr1, attr2, prev_str, next_str, flag):
+def get_df_string_extracted(df, attr1, attr2, prev_str, next_str, extract_type):
     """
-    Get a dataframe with a target attribute obtained by extracting specific string in a source attribute.The flag
+    Get a dataframe with a target attribute obtained by extracting specific string in a source attribute.The "extract_type"
     value must be 0 or 1.
     0 = extract with previous string
     1 = extract with previous and next string
@@ -50,10 +48,10 @@ def get_df_string_extracted(df, attr1, attr2, prev_str, next_str, flag):
         :param attr2: string contains the target attribute
         :param prev_str: string contains the preceding expressions to the substring to extract
         :param next_str: string contains the next expressions to the substring to extract
-        :param flag: int value to indicate one of two extraction mode
+        :param extract_type: int value to indicate one of two extraction mode
         :return df: DataFrame object
     """
-    if not flag:
+    if not extract_type:
         df[attr2] = df[attr1].str.extract(prev_str + "(\S+)")
     else:
         df[attr2] = df[attr1].str.extract("(?<=" + prev_str + ")" + "(.*?)" + "(?=" + next_str + ")")
@@ -66,13 +64,13 @@ def find_string(pattern, string):
     
         :param pattern: string to search for
         :param string: string where to search
-        :return tmp: value 0 or 1
+        :return result: value 0 or 1
     """
     if pattern in string:
-        tmp = 1
+        result = 1
     else:
-        tmp = 0
-    return tmp
+        result = 0
+    return result
 
 
 def get_df_attribute_renamed(df, old_name, new_name):
@@ -100,9 +98,9 @@ def get_df_timestamp_changed(df, attr):
     return df
 
 
-def get_df_rows_filtered(df, attr, pattern, reg_ex, flag):
+def get_df_rows_filtered(df, attr, pattern, reg_ex, filter_type):
     """
-    Get a dataframe filtered.The flag value must be 0 or 1.
+    Get a dataframe filtered.The "filter_type" value must be 0 or 1.
     0 = filter with equal operator
     1 = filter with contains function
     
@@ -110,9 +108,10 @@ def get_df_rows_filtered(df, attr, pattern, reg_ex, flag):
         :param attr: string contains the attribute from which to compare value
         :param pattern: string to search for
         :param reg_ex: boolean value for regex
+        :param filter_type: int value to indicate one of two filter mode
         :return df_filt: DataFrame object
     """
-    if not flag:
+    if not filter_type:
         df_filt = df.loc[df[attr] == pattern]
     else:
         boolean_list = df[attr].str.contains(pattern, regex = reg_ex)
@@ -122,7 +121,7 @@ def get_df_rows_filtered(df, attr, pattern, reg_ex, flag):
     
 def obtain_range_max_min_value(df, attr):
     """
-    Obtain the difference between the last and the first value in a specific attribute.
+    Obtain the difference between the maximum and the minimum value in a specific attribute.
 
         :param df: DataFrame object
         :param attr: string contains the attribute which calculates the difference
@@ -147,36 +146,36 @@ def get_df_attributes_grouped_by(df, group_by_vect, attr1, attr2):
     return df_group
 
 
-def get_df_attributes_added(df, attr_lst, lst_type):
+def get_df_attributes_added(df, attr_lst, attr_type):
     """
-    Get a dataframe with new specific type columns.The value "lst_type" must be object, str, float, double or int.
+    Get a dataframe with new specific type columns.The value "attr_type" must be object, str, float, double or int.
     
         :param df: DataFrame object
         :param attr_lst: string list contains attribute names
-        :param lst_type: string contains the attribute type
+        :param attr_type: string contains the attribute type
         :return df_final: DataFrame object
     """
     df_new = pd.DataFrame(None, columns = attr_lst)    
-    df_new.astype(lst_type).dtypes
+    df_new.astype(attr_type).dtypes
     df_final = pd.concat([df, df_new])
     return df_final
 
 
-def get_df_attributes_merged(df_1, df_2, df_1_attribute, df_2_attribute, merge_type):
+def get_df_attributes_merged(df_1, df_2, df_1_attr, df_2_attr, merge_type):
     """
     Get a dataframe obtained by merging two dataframe. The value "merge_type" must be inner, left, right, outer or cross
     and the default value is inner.
     
         :param df_1: Dataframe object
         :param df_2: Dataframe object
-        :param df_1_attribute: string contains the attribute name in the df_1
-        :param df_2_attribute: string contains the attribute name in the df_2
+        :param df_1_attr: string contains the attribute name in the df_1
+        :param df_2_attr: string contains the attribute name in the df_2
         :param merge_type: string contains the merge type
         :return df_final: Dataframe object
     """
-    if df_1_attribute != df_2_attribute:
-        df_2 = get_df_attribute_renamed(df_2, df_2_attribute, df_1_attribute)
-    df_final = df_1.merge(df_2, on = df_1_attribute, how = merge_type)
+    if df_1_attr != df_2_attr:
+        df_2 = get_df_attribute_renamed(df_2, df_2_attr, df_1_attr)
+    df_final = df_1.merge(df_2, on = df_1_attr, how = merge_type)
     return df_final
 
 
@@ -188,7 +187,7 @@ def get_df_data_concatenated(df_list, join_type):
         :param join_type: string value contains the join type
         :return df: DataFrame object
     """
-    df = pd.concat(df_list, join = join_type).drop_duplicates().reset_index(drop=True)
+    df = pd.concat(df_list, join = join_type).drop_duplicates().reset_index(drop = True)
     return df
 
 
@@ -204,7 +203,7 @@ def get_df_invalid_ip_removed(df, attr):
         try:
             ipaddress.ip_address(item)
         except ValueError:
-            df.drop(df.index[index], axis = 1, inplace = True)
+            df.drop(index, axis = 0, inplace = True)
     return df
 
 
@@ -217,29 +216,30 @@ def get_df_ip_geolocated(mm_db, ip_list):
         :return df_ip_loc: Dataframe_ip_loc object   
     """
     NEW_ATTRIBUTE_LST = ['Ip', 'City', 'Continent', 'Country', 'Location', 'Postal', 'Reg_country', 'Subdivisions']
+    
     df_from_maxminddb = mx.open_database(mm_db)
     df_ip_loc = pd.DataFrame()
     df_ip_loc = get_df_attributes_added(df_ip_loc, NEW_ATTRIBUTE_LST, str)
     df_ip_loc['Ip'] = ip_list
     for index, item in enumerate(df_ip_loc['Ip']):
         df_single_ip = df_from_maxminddb.get(item)
-        str_from_df = json.dumps(df_single_ip, ensure_ascii=False)
+        str_from_df = json.dumps(df_single_ip, ensure_ascii = False)
         ip_information_arr = str_from_df.split('},')
-        for j in ip_information_arr:
+        for i in ip_information_arr:
             if 'city' in j:
-                df_ip_loc['City'][index] = j
+                df_ip_loc['City'][index] = i
             elif 'continent' in j:
-                df_ip_loc['Continent'][index] = j
+                df_ip_loc['Continent'][index] = i
             elif "\"country\"" in j:
-                df_ip_loc['Country'][index] = j
+                df_ip_loc['Country'][index] = i
             elif 'location' in j:
-                df_ip_loc['Location'][index] = j
+                df_ip_loc['Location'][index] = i
             elif 'postal' in j:
-                df_ip_loc['Postal'][index] = j
+                df_ip_loc['Postal'][index] = i
             elif 'registered_country' in j:
-                df_ip_loc['Reg_country'][index] = j
+                df_ip_loc['Reg_country'][index] = i
             elif 'subdivisions' in j:
-                df_ip_loc['Subdivisions'][index] = j
+                df_ip_loc['Subdivisions'][index] = i
     df_ip_loc = get_df_string_extracted(df_ip_loc, 'City', 'City', "\"en\": \"", "\",", 1)
     df_ip_loc = get_df_string_extracted(df_ip_loc, 'Continent', 'Continent', "\"en\": \"", "\",", 1)
     df_ip_loc = get_df_string_extracted(df_ip_loc, 'Country', 'Country', "\"en\": \"", "\",", 1)
@@ -248,7 +248,7 @@ def get_df_ip_geolocated(mm_db, ip_list):
     df_ip_loc = get_df_string_extracted(df_ip_loc, 'Postal', 'Postal', "{\"code\": \"", "\"", 1)
     df_ip_loc = get_df_string_extracted(df_ip_loc, 'Reg_country', 'Reg_country', "\"en\": \"", "\",", 1)
     df_ip_loc = get_df_string_extracted(df_ip_loc, 'Subdivisions', 'Subdivisions', "\"en\": \"", "\",", 1)
-    df_ip_loc.drop(['Location'], axis=1)
+    df_ip_loc.drop(['Location'], axis = 1)
     return df_ip_loc
 
 

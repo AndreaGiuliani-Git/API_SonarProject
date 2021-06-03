@@ -1,7 +1,6 @@
 #Module to analyze txt-type of fdns dataset.
 import protocols.fdns.fdns as fdns_module
 
-
 def get_df_txt(path):
     """
     Get a dataframe fdns records txt-type.
@@ -11,8 +10,8 @@ def get_df_txt(path):
     """
     df = fdns_module.hand_module.get_df(path, None, ['Date', 'Domain', 'Type', 'Value'], ',')
     df_txt = get_df_values_cleaned(df)
-    df_txt.drop(df_txt[(df_txt.Type != 'txt')].index, axis=0, inplace=True)
-    df_txt.drop(['Type'], axis=1, inplace=True)
+    df_txt.drop(df_txt[(df_txt.Type != 'txt')].index, axis = 0, inplace = True)
+    df_txt.drop(['Type'], axis = 1, inplace = True)
     return df_txt
 
 
@@ -39,19 +38,19 @@ def obtain_domain_expired(df_txt):
         :param df_txt: Dataframe_txt object
         :return str_dom: string contains domains
     """
-    df_txt.loc[df_txt['Value'].str.contains('expired', flags=re.IGNORECASE)]  
+    df_txt.loc[df_txt['Value'].str.contains('expired', flags = re.IGNORECASE)]  
     str_dom = df_txt['Domain'].to_string()
     return str_dom
 
 
-def obtain_domain_with_mta_sts(df_txt):
+def obtain_server_mail_domain_with_sts_standard(df_txt):
     """
-    Obtain string contains domains that use standard MTA-STS.
+    Obtain string contains mail server domains that use STS standard.
     
         :param df_txt: Dataframe_txt object
         :return str_dom: string contains domains
     """
-    df_txt.loc[df_txt['Domain'].str.contains('_mta-sts', flags=re.IGNORECASE)]  
+    df_txt.loc[df_txt['Domain'].str.contains('_mta-sts', flags = re.IGNORECASE)]  
     str_dom = df_txt['Domain'].to_string()
     return str_dom
 

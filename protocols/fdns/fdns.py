@@ -1,7 +1,6 @@
 #Module to handle fdns dataset.
 import protocols.handling as hand_module
 
-
 def get_df_hostname_specified(df, host_name):
     """
     Get a dataframe with only rows which domains end with host_name in the dataframe.

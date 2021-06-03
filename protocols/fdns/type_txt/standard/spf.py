@@ -1,7 +1,6 @@
 #Module to analyze spf standard of the txt-type records.
 import protocols.fdns.type_txt.txt as txt_module
 
-
 def get_df_spf(path):
     """
     Get a dataframe fdns records txt-type with spf standard. The meaning of new attributes is: A = mechanism "A" 
@@ -22,6 +21,7 @@ def get_df_spf(path):
     NEW_ATTRIBUTE_LST = ['A', 'MX', 'PTR', 'A_REFERENCE_DOMAIN', 'MX_REFERENCE_DOMAIN', 'PTR_REFERENCE_DOMAIN', 'IP4_ADDRESS',
                          'IP4_MECHANISM', 'IP4_QUALIFIERS', 'IP6_ADDRESS', 'IP6_MECHANISM', 'IP6_QUALIFIERS', 'INCLUDE',
                         'EXISTS', 'REDIRECT', 'EXPLANATION', 'ALL_QUALIFIERS']
+    
     df_txt = txt_module.get_df_txt(path)
     df_spf = txt_module.fdns_module.hand_module.get_df_rows_filtered(df_txt, 'Value', 'v=spf1', False, 1)
     df_spf = txt_module.fdns_module.hand_module.get_df_attributes_added(df_spf, NEW_ATTRIBUTE_LST , str)
@@ -52,7 +52,7 @@ def get_df_spf(path):
             value_lst = [include_domains, all_qualifier, exists_domains, redirect_domains, a_reference_domains,
                          mx_reference_domains,  ptr_reference_domains, explanation_domain]
             df_spf = txt_module.get_df_new_values_assigned(df_spf, index, value_lst, dictionary)         
-    df_spf.drop(['Value'], axis=1, inplace=True)
+    df_spf.drop(['Value'], axis = 1, inplace = True)
     return df_spf
 
 
@@ -83,11 +83,11 @@ def get_df_mechanism_extracted(df_spf, split_string, index_loop):
     for index, item in enumerate(tmp_list_mechanism):
         if item:
             if txt_module.fdns_module.hand_module.re.match(r'^([+-~?]?a)$', item):
-                df_spf.iat[index_loop, df_spf.columns.get_loc('A')] = tmp_list_mechanism[index]
+                df_spf.at[index_loop, 'A'] = tmp_list_mechanism[index]
             if txt_module.fdns_module.hand_module.re.match(r'^([+-~?]?mx)$', item):
-                df_spf.iat[index_loop, df_spf.columns.get_loc('MX')] = tmp_list_mechanism[index]
+                df_spf.at[index_loop, 'MX'] = tmp_list_mechanism[index]
             if txt_module.fdns_module.hand_module.re.match(r'^([+]?ptr)$', item):
-                df_spf.iat[index_loop, df_spf.columns.get_loc('PTR')] = tmp_list_mechanism[index]
+                df_spf.at[index_loop, 'PTR'] = tmp_list_mechanism[index]
     return df_spf          
 
 
@@ -134,8 +134,8 @@ def get_df_ip_info_extracted(df_spf, string_df_value, split_string, index_loop, 
             except:
                 pass
         df_spf.at[index_loop, VERSION_2 + 'ADDRESS'] = ip_addresses
-        df_spf.iat[index_loop, df_spf.columns.get_loc(VERSION_2 + 'MECHANISM')] = list_mechanism
-        df_spf.iat[index_loop, df_spf.columns.get_loc(VERSION_2 + 'QUALIFIERS')] = list_qualifiers
+        df_spf.at[index_loop, VERSION_2 + 'MECHANISM'] = list_mechanism
+        df_spf.at[index_loop, VERSION_2 + 'QUALIFIERS'] = list_qualifiers
     return df_spf        
             
             

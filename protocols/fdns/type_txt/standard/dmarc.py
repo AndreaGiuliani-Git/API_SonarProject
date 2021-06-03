@@ -1,7 +1,6 @@
 #Module to analyze dmarc standard of txt-type records.
 import protocols.fdns.type_txt.txt as txt_module
 
-
 def get_df_dmarc(path):
     """
     Get a dataframe fdns records txt-type with dmarc standard.The meaning of new attributes is: ASPF = spf 
@@ -12,9 +11,10 @@ def get_df_dmarc(path):
     mail receiver policy for all subdomains. More informations at the link: https://tools.ietf.org/html/rfc7489#page-17.
     
         :param path: string contains the FDNS-TXT database path
-        :return df_marc: Dataframe_marc object
+        :return df_dmarc: Dataframe_dmarc object
     """
     NEW_ATTRIBUTE_LST = ['ASPF', 'ADKIM', 'FO', 'P', 'PCT', 'RF', 'RI', 'RUA', 'RUF', 'SP']
+    
     df_txt = txt_module.get_df_txt(path)
     df_dmarc = txt_module.fdns_module.hand_module.get_df_rows_filtered(df_txt, 'Value', 'v=DMARC1', False, 1)
     df_dmarc = txt_module.fdns_module.hand_module.get_df_attributes_added(df_dmarc, NEW_ATTRIBUTE_LST , str)

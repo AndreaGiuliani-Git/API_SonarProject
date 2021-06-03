@@ -1,7 +1,6 @@
 #Module to plot chart of data.
 from matplotlib import pyplot as plt
 
-
 def scatter_plot_chart(x_data, y_data, x_label, y_label, title):
     """
     Plot a scatter chart with the data of dataframe.

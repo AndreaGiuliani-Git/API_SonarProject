@@ -1,35 +1,33 @@
 #Module to analyze a-type of fdns dataset
 import protocols.fdns.fdns as fdns_module
 
-
 def get_df_a(path):
     """
     Get a dataframe fdns records a-type.
         
         :param path: string contains the fdns database a-type path
         :return df_a: Dataframe_a object
-    
     """
     df = fdns_module.hand_module.get_df(path, None, ['Date', 'Domain', 'Type', 'Value'], ',')
     df_a = get_df_values_cleaned(df)
     df_a = fdns_module.hand_module.get_df_attribute_renamed(df_a, 'Value', 'Ip')
     df_a = fdns_module.hand_module.get_df_chars_replaced(df_a, 'Ip', 'Ip', ["\"value\":\"", "}"])
     df_a.drop(df_a[(df_a.Type != 'a')].index, inplace=True)
-    df_a.drop(['Type'], axis=1)
+    df_a.drop(['Type'], axis=1, inplace = True)
     df_a.reset_index()
     df_a = fdns_module.hand_module.get_df_invalid_ip_removed(df_a, 'Ip')
     return df_a
 
 
-def get_df_values_cleaned(df_a):
+def get_df_values_cleaned(df_txt):
     """
     Get a dataframe without unnecessary characters.
     
         :param df_txt: Dataframe_a object
-        :return df_txt: Dataframe_a object
+        :return df_a: Dataframe_a object
     """
-    df_a.dropna()
-    df_a = fdns_module.hand_module.get_df_chars_replaced(df_a, 'Date', 'Date', ['{\"timestamp\":\"', '\"'])
+    df_txt.dropna()
+    df_a = fdns_module.hand_module.get_df_chars_replaced(df_txt, 'Date', 'Date', ['{\"timestamp\":\"', '\"'])
     df_a = fdns_module.hand_module.get_df_timestamp_changed(df_a, 'Date')
     df_a = fdns_module.hand_module.get_df_chars_replaced(df_a, 'Domain', 'Domain', ['name:', '\"'])
     df_a = fdns_module.hand_module.get_df_chars_replaced(df_a, 'Type', 'Type', ['type:', ';', '\"'])
@@ -78,7 +76,7 @@ def get_df_ip_freq_grouped_by_subdivisions(df, df_ip_loc):
 
 def get_df_ip_selected(df, ip_address_list):
     """
-    Get a dataframe which contains all ip-address matched in 'Ip' attribute in the dataframe.
+    Get a dataframe which contains all ip-address matched in "Ip" attribute in the dataframe.
     
         :param df: Dataframe object
         :param ip_address_list: string list contains the ip-address to search

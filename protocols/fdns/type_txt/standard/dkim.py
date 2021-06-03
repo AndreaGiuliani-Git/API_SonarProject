@@ -1,7 +1,6 @@
 #Module to analyze dkim standard of txt-type records.
 import protocols.fdns.type_txt.txt as txt_module
 
-
 def get_df_dkim(path):
     """
     Get a dataframe fdns records txt-type with dkim standard. The meaning of new attributes is: HASH_ALG = hash
@@ -13,6 +12,7 @@ def get_df_dkim(path):
         :return df_dkim: Dataframe_dkim object
     """
     NEW_ATTRIBUTE_LST = ['HASH_ALG', 'KEY_TYPE', 'TAG', 'PUBL_KEY', 'SERVICE', 'NOTE']
+    
     df_txt = txt_module.get_df_txt(path)
     df_dkim = txt_module.fdns_module.hand_module.get_df_rows_filtered(df_txt, 'Value', 'v=DKIM1', False, 1)
     df_dkim = txt_module.fdns_module.hand_module.get_df_attributes_added(df_dkim, NEW_ATTRIBUTE_LST , str)
