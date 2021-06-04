@@ -1,5 +1,5 @@
 #Module to analyze spf standard of the txt-type records.
-import protocols.fdns.type_txt.txt as txt_module
+import protocols.fdns.type_txt.txt as txt
 
 def get_df_spf(path):
     """
@@ -21,37 +21,30 @@ def get_df_spf(path):
     NEW_ATTRIBUTE_LST = ['A', 'MX', 'PTR', 'A_REFERENCE_DOMAIN', 'MX_REFERENCE_DOMAIN', 'PTR_REFERENCE_DOMAIN', 'IP4_ADDRESS',
                          'IP4_MECHANISM', 'IP4_QUALIFIERS', 'IP6_ADDRESS', 'IP6_MECHANISM', 'IP6_QUALIFIERS', 'INCLUDE',
                         'EXISTS', 'REDIRECT', 'EXPLANATION', 'ALL_QUALIFIERS']
-    
-    df_txt = txt_module.get_df_txt(path)
-    df_spf = txt_module.fdns_module.hand_module.get_df_rows_filtered(df_txt, 'Value', 'v=spf1', False, 1)
-    df_spf = txt_module.fdns_module.hand_module.get_df_attributes_added(df_spf, NEW_ATTRIBUTE_LST , str)
-    dictionary = {
-        'INCLUDE' : txt_module.fdns_module.hand_module.math.nan,
-        'ALL_QUALIFIERS' : '+',
-        'EXISTS' : txt_module.fdns_module.hand_module.math.nan,
-        'REDIRECT' :  txt_module.fdns_module.hand_module.math.nan,
-        'A_REFERENCE_DOMAIN' : txt_module.fdns_module.hand_module.math.nan,
-        'MX_REFERENCE_DOMAIN' : txt_module.fdns_module.hand_module.math.nan,
-        'PTR_REFERENCE_DOMAIN' : txt_module.fdns_module.hand_module.math.nan,
-        'EXPLANATION' :  txt_module.fdns_module.hand_module.math.nan
-    }
+    NAN = txt.fdns.handle.math.nan
+    attr_default_value = {'INCLUDE' : NAN, 'ALL_QUALIFIERS' : '+', 'EXISTS' : NAN, 'REDIRECT' :  NAN,
+                          'A_REFERENCE_DOMAIN' : NAN, 'MX_REFERENCE_DOMAIN' : NAN, 'PTR_REFERENCE_DOMAIN' : NAN,
+                          'EXPLANATION' :  NAN}
+    df_txt = txt.get_df_txt(path)
+    df_spf = txt.fdns.handle.get_df_rows_filtered(df_txt, 'Value', 'v=spf1', False, 1)
+    df_spf = txt.fdns.handle.get_df_attributes_added(df_spf, NEW_ATTRIBUTE_LST , str)
     for index, item in enumerate(df_spf['Value']):
         field_list = item.split(" ")
         if not field_list[0].endswith(('}','all')) and item.endswith('}'):
             df_spf = get_df_mechanism_extracted(df_spf, field_list, index)
             df_spf = get_df_ip_info_extracted(df_spf, item, field_list, index, 'ipv4')
             df_spf = get_df_ip_info_extracted(df_spf, item, field_list, index, 'ipv6')                
-            include_domains = txt_module.fdns_module.hand_module.re.findall(r'(?<=include:).*?(?= )', item)
-            all_qualifier = txt_module.fdns_module.hand_module.re.search(r'(?<= ).(?=all})', item)
-            exists_domains = txt_module.fdns_module.hand_module.re.findall(r'(?<=exists:).*?(?= )', item)
-            redirect_domains = txt_module.fdns_module.hand_module.re.findall(r' redirect=(.*)}', item)
-            a_reference_domains = txt_module.fdns_module.hand_module.re.findall(r'(?<= )[+-~?]?a:.*?(?= )', item)
-            ptr_reference_domains = txt_module.fdns_module.hand_module.re.findall(r'(?<= )[+-~?]?ptr:.*?(?= )', item)
-            mx_reference_domains = txt_module.fdns_module.hand_module.re.findall(r'(?<= )[+-~?]?mx:.*?(?= )', item)
-            explanation_domain = txt_module.fdns_module.hand_module.re.search(r'(?<= )exp:.*?(?= )', item)
-            value_lst = [include_domains, all_qualifier, exists_domains, redirect_domains, a_reference_domains,
+            include_domains = txt.fdns.handle.re.findall(r'(?<=include:).*?(?= )', item)
+            all_qualifier = txt.fdns.handle.re.search(r'(?<= ).(?=all})', item)
+            exists_domains = txt.fdns.handle.re.findall(r'(?<=exists:).*?(?= )', item)
+            redirect_domains = txt.fdns.handle.re.findall(r' redirect=(.*)}', item)
+            a_reference_domains = txt.fdns.handle.re.findall(r'(?<= )[+-~?]?a:.*?(?= )', item)
+            ptr_reference_domains = txt.fdns.handle.re.findall(r'(?<= )[+-~?]?ptr:.*?(?= )', item)
+            mx_reference_domains = txt.fdns.handle.re.findall(r'(?<= )[+-~?]?mx:.*?(?= )', item)
+            explanation_domain = txt.fdns.handle.re.search(r'(?<= )exp:.*?(?= )', item)
+            attr_value_lst = [include_domains, all_qualifier, exists_domains, redirect_domains, a_reference_domains,
                          mx_reference_domains,  ptr_reference_domains, explanation_domain]
-            df_spf = txt_module.get_df_new_values_assigned(df_spf, index, value_lst, dictionary)         
+            df_spf = txt.get_df_new_values_assigned(df_spf, index, attr_value_lst, attr_default_value)         
     df_spf.drop(['Value'], axis = 1, inplace = True)
     return df_spf
 
@@ -69,24 +62,24 @@ def get_df_mechanism_extracted(df_spf, split_string, index_loop):
     REGEX_STR = r"^([+-~?]?a)$|^([+-~?]?mx)$|^([+]?ptr)$"
     tmp_list_mechanism = []
     try: 
-        first_mechanism = txt_module.fdns_module.hand_module.re.match(REGEX_STR, split_string[1])
+        first_mechanism = txt.fdns.handle.re.match(REGEX_STR, split_string[1])
         if first_mechanism:
             tmp_list_mechanism.append(first_mechanism.group())
-        second_mechanism = txt_module.fdns_module.hand_module.re.match(REGEX_STR, split_string[2])
+        second_mechanism = txt.fdns.handle.re.match(REGEX_STR, split_string[2])
         if second_mechanism:
             tmp_list_mechanism.append(second_mechanism.group())
-        third_mechanism = txt_module.fdns_module.hand_module.re.match(REGEX_STR, split_string[3])
+        third_mechanism = txt.fdns.handle.re.match(REGEX_STR, split_string[3])
         if third_mechanism:
             tmp_list_mechanism.append(third_mechanism.group()) 
     except:
         pass
     for index, item in enumerate(tmp_list_mechanism):
         if item:
-            if txt_module.fdns_module.hand_module.re.match(r'^([+-~?]?a)$', item):
+            if txt.fdns.handle.re.match(r'^([+-~?]?a)$', item):
                 df_spf.at[index_loop, 'A'] = tmp_list_mechanism[index]
-            if txt_module.fdns_module.hand_module.re.match(r'^([+-~?]?mx)$', item):
+            if txt.fdns.handle.re.match(r'^([+-~?]?mx)$', item):
                 df_spf.at[index_loop, 'MX'] = tmp_list_mechanism[index]
-            if txt_module.fdns_module.hand_module.re.match(r'^([+]?ptr)$', item):
+            if txt.fdns.handle.re.match(r'^([+]?ptr)$', item):
                 df_spf.at[index_loop, 'PTR'] = tmp_list_mechanism[index]
     return df_spf          
 
@@ -110,9 +103,9 @@ def get_df_ip_info_extracted(df_spf, string_df_value, split_string, index_loop, 
     else:
         VERSION_1 = 'ip6:'
         VERSION_2 = 'IP6_'
-    ip_complete_strings = txt_module.fdns_module.hand_module.re.findall(r"([+-~?]?" + VERSION_1 + ".*?) ", string_df_value)
-    ip_qualifiers = txt_module.fdns_module.hand_module.re.findall(r"([+-~?]?)" + VERSION_1, string_df_value)
-    ip_addresses = txt_module.fdns_module.hand_module.re.findall(r"[+-~?]?" + VERSION_1 + "(.*?) ", string_df_value)
+    ip_complete_strings = txt.fdns.handle.re.findall(r"([+-~?]?" + VERSION_1 + ".*?) ", string_df_value)
+    ip_qualifiers = txt.fdns.handle.re.findall(r"([+-~?]?)" + VERSION_1, string_df_value)
+    ip_addresses = txt.fdns.handle.re.findall(r"[+-~?]?" + VERSION_1 + "(.*?) ", string_df_value)
     if ip_complete_strings:
         list_qualifiers = []
         tmp_list_mechanism = []
@@ -123,13 +116,13 @@ def get_df_ip_info_extracted(df_spf, string_df_value, split_string, index_loop, 
             else:
                 list_qualifiers.append(ip_qualifiers[index])
             try:
-                first_mechanism = txt_module.fdns_module.hand_module.re.match(REGEX_STR, split_string[split_string.index(item) + 1])
+                first_mechanism = txt.fdns.handle.re.match(REGEX_STR, split_string[split_string.index(item) + 1])
                 if first_mechanism:
                     tmp_list_mechanism.append(first_mechanism)
-                second_mechanism = txt_module.fdns_module.hand_module.re.match(REGEX_STR, split_string[split_string.index(item) + 2])
+                second_mechanism = txt.fdns.handle.re.match(REGEX_STR, split_string[split_string.index(item) + 2])
                 if second_mechanism:
                     tmp_list_mechanism.append(second_mechanism)
-                third_mechanism = txt_module.fdns_module.hand_module.re.match(REGEX_STR, split_string[split_string.index(item) + 3])
+                third_mechanism = txt.fdns.handle.re.match(REGEX_STR, split_string[split_string.index(item) + 3])
                 list_mechanism.append(tmp_list_mechanism)
             except:
                 pass

@@ -1,5 +1,5 @@
 #Module to analyze txt-type of fdns dataset.
-import protocols.fdns.fdns as fdns_module
+import protocols.fdns.fdns as fdns
 
 def get_df_txt(path):
     """
@@ -8,7 +8,7 @@ def get_df_txt(path):
         :param path: string contains the fdns database txt-type path
         :return df_txt: Dataframe_txt object
     """
-    df = fdns_module.hand_module.get_df(path, None, ['Date', 'Domain', 'Type', 'Value'], ',')
+    df = fdns.handle.get_df(path, None, ['Date', 'Domain', 'Type', 'Value'], ',')
     df_txt = get_df_values_cleaned(df)
     df_txt.drop(df_txt[(df_txt.Type != 'txt')].index, axis = 0, inplace = True)
     df_txt.drop(['Type'], axis = 1, inplace = True)
@@ -23,11 +23,11 @@ def get_df_values_cleaned(df_txt):
         :return df_txt: Dataframe_txt object
     """
     df_txt.dropna()
-    df_txt = fdns_module.hand_module.get_df_chars_replaced(df_txt, 'Date', 'Date', ['{\"timestamp\":\"', '\"'])
-    df_txt = fdns_module.hand_module.get_df_timestamp_changed(df_txt, 'Date')
-    df_txt = fdns_module.hand_module.get_df_chars_replaced(df_txt, 'Domain', 'Domain', ['name:', '\"'])
-    df_txt = fdns_module.hand_module.get_df_chars_replaced(df_txt, 'Type', 'Type', ['type:', ';', '\"'])
-    df_txt = fdns_module.hand_module.get_df_chars_replaced(df_txt, 'Value', 'Value', ['value:', '\"'])
+    df_txt = fdns.handle.get_df_chars_replaced(df_txt, 'Date', 'Date', ['{\"timestamp\":\"', '\"'])
+    df_txt = fdns.handle.get_df_timestamp_changed(df_txt, 'Date')
+    df_txt = fdns.handle.get_df_chars_replaced(df_txt, 'Domain', 'Domain', ['name:', '\"'])
+    df_txt = fdns.handle.get_df_chars_replaced(df_txt, 'Type', 'Type', ['type:', ';', '\"'])
+    df_txt = fdns.handle.get_df_chars_replaced(df_txt, 'Value', 'Value', ['value:', '\"'])
     return df_txt
 
 
@@ -69,8 +69,9 @@ def get_df_new_values_assigned(df_txt, df_txt_index, value_lst, dictionary):
     for index, item in enumerate(key_list):
         if not value_lst[index]:
             df_txt.at[df_txt_index, item] = dictionary[item]
-        if type(value_lst[index]) != list and value_lst[index]:
-            df_txt.at[df_txt_index, item] = value_lst[index].group(0)
-        else:
-            df_txt.at[df_txt_index, item] = value_lst[index]
+        if type(value_lst[index]) != list:
+            if value_lst[index]:
+                df_txt.at[df_txt_index, item] = value_lst[index].group(0)
+            else:
+                df_txt.at[df_txt_index, item] = value_lst[index]
     return df_txt

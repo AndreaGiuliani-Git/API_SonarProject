@@ -8,31 +8,31 @@ import maxminddb as mx
 from ipyleaflet import Map, Marker, basemaps, FullScreenControl, MeasureControl
 pd.options.mode.chained_assignment = None
 
-def get_df(path, type_compression, columns_name, sepa):
+def get_df(path, type_compression, columns_name, separator):
     """
     Get dataframe from dataset through its path.
 
         :param path: string contains the path of the dataset
         :param type_compression: string contains the compression type
         :param columns_name: strings array contains the columns name
-        :param sepa: character contains attributes separator
+        :param separator: character contains attributes separator
         :return df: DataFrame object
     """
-    df = pd.read_csv(path, compression = type_compression, header = None, names = columns_name, sep = sepa, dtype = str)
+    df = pd.read_csv(path, compression = type_compression, header = None, names = columns_name, sep = separator, dtype = str)
     return df
 
 
-def get_df_chars_replaced(df, attr1, attr2, str_arr):
+def get_df_chars_replaced(df, attr1, attr2, exp_to_delete):
     """
     Get a dataframe with a target attribute obtained from replacing specific characters by a source attribute.
     
         :param df: DataFrame object
         :param attr1: string contains the source attribute 
         :param attr2: string contains the target attribute
-        :param str_arr: strings array contains expressions to delete
+        :param exp_to_delete: strings array contains expressions to delete
         :return df: DataFrame object
     """
-    df[attr2] = df[attr1].replace(str_arr, '', regex = True)
+    df[attr2] = df[attr1].replace(exp_to_delete, '', regex = True)
     return df
 
 
@@ -98,7 +98,7 @@ def get_df_timestamp_changed(df, attr):
     return df
 
 
-def get_df_rows_filtered(df, attr, pattern, reg_ex, filter_type):
+def get_df_rows_filtered(df, attr, pattern, activate_regex, filter_type):
     """
     Get a dataframe filtered.The "filter_type" value must be 0 or 1.
     0 = filter with equal operator
@@ -107,14 +107,14 @@ def get_df_rows_filtered(df, attr, pattern, reg_ex, filter_type):
         :param df: DataFrame object
         :param attr: string contains the attribute from which to compare value
         :param pattern: string to search for
-        :param reg_ex: boolean value for regex
+        :param activate_regex: boolean value for regex
         :param filter_type: int value to indicate one of two filter mode
         :return df_filt: DataFrame object
     """
     if not filter_type:
         df_filt = df.loc[df[attr] == pattern]
     else:
-        boolean_list = df[attr].str.contains(pattern, regex = reg_ex)
+        boolean_list = df[attr].str.contains(pattern, regex = activate_regex)
         df_filt = df.loc[boolean_list]
     return df_filt
     
@@ -131,31 +131,31 @@ def obtain_range_max_min_value(df, attr):
     return delta
 
 
-def get_df_attributes_grouped_by(df, group_by_vect, attr1, attr2):
+def get_df_attributes_grouped_by(df, group_by_attr, attr1, attr2):
     """
     Get a dataframe grouping by an attribute vector.
 
         :param df: DataFrame object
-        :param group_by_vect: strings vector contains the attributes considered in the grouping
+        :param group_by_attr: strings vector contains the attributes considered in the grouping
         :param attr1: string contains the attribute to sort
         :param attr2: string contains the attribute to sort by
         :return df_group: DataFrame object
     """
-    df_group = df.groupby(group_by_vect).count()
+    df_group = df.groupby(group_by_attr).count()
     df_group = df_group[[attr1]].sort_values(by = attr2, ascending = False)
     return df_group
 
 
-def get_df_attributes_added(df, attr_lst, attr_type):
+def get_df_attributes_added(df, attr_names, attr_type):
     """
     Get a dataframe with new specific type columns.The value "attr_type" must be object, str, float, double or int.
     
         :param df: DataFrame object
-        :param attr_lst: string list contains attribute names
+        :param attr_names: string list contains attribute names
         :param attr_type: string contains the attribute type
         :return df_final: DataFrame object
     """
-    df_new = pd.DataFrame(None, columns = attr_lst)    
+    df_new = pd.DataFrame(None, columns = attr_names)    
     df_new.astype(attr_type).dtypes
     df_final = pd.concat([df, df_new])
     return df_final
@@ -183,7 +183,7 @@ def get_df_data_concatenated(df_list, join_type):
     """
     Get a dataframe which contains all values from concat operation and dropping duplicated values.
     
-        :param df_list: DataFrame list
+        :param df_list: DataFrame object list
         :param join_type: string value contains the join type
         :return df: DataFrame object
     """
@@ -216,38 +216,41 @@ def get_df_ip_geolocated(mm_db, ip_list):
         :return df_ip_loc: Dataframe_ip_loc object   
     """
     NEW_ATTRIBUTE_LST = ['Ip', 'City', 'Continent', 'Country', 'Location', 'Postal', 'Reg_country', 'Subdivisions']
-    
     df_from_maxminddb = mx.open_database(mm_db)
     df_ip_loc = pd.DataFrame()
     df_ip_loc = get_df_attributes_added(df_ip_loc, NEW_ATTRIBUTE_LST, str)
     df_ip_loc['Ip'] = ip_list
+    regex_for_extr = {
+        1 : ('City', 'City', "\"en\": \"", "\","),
+        2 : ('Continent', 'Continent', "\"en\": \"", "\","),
+        3 : ('Country', 'Country', "\"en\": \"", "\","),
+        4 : ('Location', 'Long', "\"longitude\": \"", ","),
+        5 : ('Postal', 'Postal', "{\"code\": \"", "\""),
+        6 : ('Reg_country', 'Reg_country', "\"en\": \"", "\","),
+        7 : ('Subdivisions', 'Subdivisions', "\"en\": \"", "\",")
+    }
     for index, item in enumerate(df_ip_loc['Ip']):
         df_single_ip = df_from_maxminddb.get(item)
         str_from_df = json.dumps(df_single_ip, ensure_ascii = False)
         ip_information_arr = str_from_df.split('},')
         for i in ip_information_arr:
-            if 'city' in j:
+            if 'city' in i:
                 df_ip_loc['City'][index] = i
-            elif 'continent' in j:
+            elif 'continent' in i:
                 df_ip_loc['Continent'][index] = i
-            elif "\"country\"" in j:
+            elif "\"country\"" in i:
                 df_ip_loc['Country'][index] = i
-            elif 'location' in j:
+            elif 'location' in i:
                 df_ip_loc['Location'][index] = i
-            elif 'postal' in j:
+            elif 'postal' in i:
                 df_ip_loc['Postal'][index] = i
-            elif 'registered_country' in j:
+            elif 'registered_country' in i:
                 df_ip_loc['Reg_country'][index] = i
-            elif 'subdivisions' in j:
+            elif 'subdivisions' in i:
                 df_ip_loc['Subdivisions'][index] = i
-    df_ip_loc = get_df_string_extracted(df_ip_loc, 'City', 'City', "\"en\": \"", "\",", 1)
-    df_ip_loc = get_df_string_extracted(df_ip_loc, 'Continent', 'Continent', "\"en\": \"", "\",", 1)
-    df_ip_loc = get_df_string_extracted(df_ip_loc, 'Country', 'Country', "\"en\": \"", "\",", 1)
-    df_ip_loc = get_df_string_extracted(df_ip_loc, 'Location', 'Long', "\"longitude\": \"", ",", 1)
-    df_ip_loc = get_df_string_extracted(df_ip_loc, 'Location', 'Lat', "\"latitude\": \"", ",", 1)
-    df_ip_loc = get_df_string_extracted(df_ip_loc, 'Postal', 'Postal', "{\"code\": \"", "\"", 1)
-    df_ip_loc = get_df_string_extracted(df_ip_loc, 'Reg_country', 'Reg_country', "\"en\": \"", "\",", 1)
-    df_ip_loc = get_df_string_extracted(df_ip_loc, 'Subdivisions', 'Subdivisions', "\"en\": \"", "\",", 1)
+    for i in range(1, 8):
+        df_ip_loc = get_df_string_extracted(df_ip_loc, regex_for_extr.get(i)[0], regex_for_extr.get(i)[1],
+                                            regex_for_extr.get(i)[2], regex_for_extr.get(i)[3], 1)
     df_ip_loc.drop(['Location'], axis = 1)
     return df_ip_loc
 

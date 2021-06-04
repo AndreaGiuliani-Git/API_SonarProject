@@ -1,5 +1,5 @@
 #Module to analyze a-type of fdns dataset
-import protocols.fdns.fdns as fdns_module
+import protocols.fdns.fdns as fdns
 
 def get_df_a(path):
     """
@@ -8,14 +8,14 @@ def get_df_a(path):
         :param path: string contains the fdns database a-type path
         :return df_a: Dataframe_a object
     """
-    df = fdns_module.hand_module.get_df(path, None, ['Date', 'Domain', 'Type', 'Value'], ',')
+    df = fdns.handle.get_df(path, None, ['Date', 'Domain', 'Type', 'Value'], ',')
     df_a = get_df_values_cleaned(df)
-    df_a = fdns_module.hand_module.get_df_attribute_renamed(df_a, 'Value', 'Ip')
-    df_a = fdns_module.hand_module.get_df_chars_replaced(df_a, 'Ip', 'Ip', ["\"value\":\"", "}"])
+    df_a = fdns.handle.get_df_attribute_renamed(df_a, 'Value', 'Ip')
+    df_a = fdns.handle.get_df_chars_replaced(df_a, 'Ip', 'Ip', ["\"value\":\"", "}"])
     df_a.drop(df_a[(df_a.Type != 'a')].index, inplace=True)
     df_a.drop(['Type'], axis=1, inplace = True)
     df_a.reset_index()
-    df_a = fdns_module.hand_module.get_df_invalid_ip_removed(df_a, 'Ip')
+    df_a = fdns.handle.get_df_invalid_ip_removed(df_a, 'Ip')
     return df_a
 
 
@@ -27,11 +27,11 @@ def get_df_values_cleaned(df_txt):
         :return df_a: Dataframe_a object
     """
     df_txt.dropna()
-    df_a = fdns_module.hand_module.get_df_chars_replaced(df_txt, 'Date', 'Date', ['{\"timestamp\":\"', '\"'])
-    df_a = fdns_module.hand_module.get_df_timestamp_changed(df_a, 'Date')
-    df_a = fdns_module.hand_module.get_df_chars_replaced(df_a, 'Domain', 'Domain', ['name:', '\"'])
-    df_a = fdns_module.hand_module.get_df_chars_replaced(df_a, 'Type', 'Type', ['type:', ';', '\"'])
-    df_a = fdns_module.hand_module.get_df_chars_replaced(df_a, 'Value', 'Value', ['value:', '\"'])
+    df_a = fdns.handle.get_df_chars_replaced(df_txt, 'Date', 'Date', ['{\"timestamp\":\"', '\"'])
+    df_a = fdns.handle.get_df_timestamp_changed(df_a, 'Date')
+    df_a = fdns.handle.get_df_chars_replaced(df_a, 'Domain', 'Domain', ['name:', '\"'])
+    df_a = fdns.handle.get_df_chars_replaced(df_a, 'Type', 'Type', ['type:', ';', '\"'])
+    df_a = fdns.handle.get_df_chars_replaced(df_a, 'Value', 'Value', ['value:', '\"'])
     return df_a
 
 
@@ -43,8 +43,8 @@ def get_df_ip_freq_grouped_by_country(df, df_ip_loc):
         :param df_ip_loc: Dataframe_ip_loc object
         :return df_complete_group: Dataframe_complete object
     """
-    df_complete = fdns_module.hand_module.get_df_attributes_merged(df, df_ip_loc, 'Ip', 'Ip', 'inner')
-    df_complete_group = fdns_module.hand_module.get_df_attributes_grouped_by(df_complete, ['Country'], 'Ip', 'Ip')
+    df_complete = fdns.handle.get_df_attributes_merged(df, df_ip_loc, 'Ip', 'Ip', 'inner')
+    df_complete_group = fdns.handle.get_df_attributes_grouped_by(df_complete, ['Country'], 'Ip', 'Ip')
     return df_complete_group
 
 
@@ -56,8 +56,8 @@ def get_df_subdomain_freq_grouped_by_ip(df, df_ip_loc):
         :param df_ip_loc: Dataframe_ip_loc object
         :return df_complete_group: Dataframe_complete object
     """
-    df_complete = fdns_module.hand_module.get_df_attributes_merged(df, df_ip_loc, 'Ip', 'Ip', 'inner')
-    df_complete_group = fdns_module.hand_module.get_df_attributes_grouped_by(df_complete, ['Ip'], 'Domain', 'Domain')
+    df_complete = fdns.handle.get_df_attributes_merged(df, df_ip_loc, 'Ip', 'Ip', 'inner')
+    df_complete_group = fdns.handle.get_df_attributes_grouped_by(df_complete, ['Ip'], 'Domain', 'Domain')
     return df_complete_group
 
 
@@ -69,8 +69,8 @@ def get_df_ip_freq_grouped_by_subdivisions(df, df_ip_loc):
         :param df_ip_loc: Dataframe_ip_loc object
         :return df_complete_group: Dataframe_complete object
     """
-    df_complete = fdns_module.hand_module.get_df_attributes_merged(df, df_ip_loc, 'Ip', 'Ip', 'inner')
-    df_complete_group = fdns_module.hand_module.get_df_attributes_grouped_by(df_complete, ['Subdivisions'], 'Ip', 'Ip')
+    df_complete = fdns.handle.get_df_attributes_merged(df, df_ip_loc, 'Ip', 'Ip', 'inner')
+    df_complete_group = fdns.handle.get_df_attributes_grouped_by(df_complete, ['Subdivisions'], 'Ip', 'Ip')
     return df_complete_group
 
 
@@ -82,9 +82,9 @@ def get_df_ip_selected(df, ip_address_list):
         :param ip_address_list: string list contains the ip-address to search
         :return df_final: DataFrame object 
     """
-    df_final = hand_module.pd.DataFrame()
+    df_final = handle.pd.DataFrame()
     for i in ip_address_list:   
-        df_ip_searched = hand_module.get_df_rows_filtered(df, 'Ip', i, False, 0)
+        df_ip_searched = handle.get_df_rows_filtered(df, 'Ip', i, False, 0)
         df_final = df_final.append(df_ip_searched, ignore_index = True)
     return df_final
 

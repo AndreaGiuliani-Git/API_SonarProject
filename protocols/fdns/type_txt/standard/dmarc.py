@@ -1,5 +1,5 @@
 #Module to analyze dmarc standard of txt-type records.
-import protocols.fdns.type_txt.txt as txt_module
+import protocols.fdns.type_txt.txt as txt
 
 def get_df_dmarc(path):
     """
@@ -14,34 +14,24 @@ def get_df_dmarc(path):
         :return df_dmarc: Dataframe_dmarc object
     """
     NEW_ATTRIBUTE_LST = ['ASPF', 'ADKIM', 'FO', 'P', 'PCT', 'RF', 'RI', 'RUA', 'RUF', 'SP']
-    
-    df_txt = txt_module.get_df_txt(path)
-    df_dmarc = txt_module.fdns_module.hand_module.get_df_rows_filtered(df_txt, 'Value', 'v=DMARC1', False, 1)
-    df_dmarc = txt_module.fdns_module.hand_module.get_df_attributes_added(df_dmarc, NEW_ATTRIBUTE_LST , str)
-    dictionary = {
-        'ASPF' : 'r',
-        'ADKIM' : 'r',
-        'FO' : '0',
-        'P' :  txt_module.fdns_module.hand_module.math.nan,
-        'PCT' : '100',
-        'RF' : 'afrf',
-        'RI' : '86400',
-        'RUA' :  txt_module.fdns_module.hand_module.math.nan,
-        'RUF' :  txt_module.fdns_module.hand_module.math.nan,
-        'SP' :  txt_module.fdns_module.hand_module.math.nan
-    }
+    NAN = txt.fdns.handle.math.nan
+    attr_default_value = {'ASPF' : 'r', 'ADKIM' : 'r', 'FO' : '0', 'P' :  NAN, 'PCT' : '100', 'RF' : 'afrf', 'RI' : '86400',
+                          'RUA' :  NAN, 'RUF' :  NAN, 'SP' :  NAN}
+    df_txt = txt.get_df_txt(path)
+    df_dmarc = txt.fdns.handle.get_df_rows_filtered(df_txt, 'Value', 'v=DMARC1', False, 1)
+    df_dmarc = txt.fdns.handle.get_df_attributes_added(df_dmarc, NEW_ATTRIBUTE_LST , str)
     for index, item in enumerate(df_dmarc['Value']):
-        aspf = txt_module.fdns_module.hand_module.re.search(r'(?<=aspf=).*?(?=[;}])', item)
-        adkim = txt_module.fdns_module.hand_module.re.search(r'(?<=adkim=).*?(?=[;}])', item)
-        fo = txt_module.fdns_module.hand_module.re.search(r'(?<=fo=).*?(?=[;}])', item)
-        p = txt_module.fdns_module.hand_module.re.search(r'(?<=p=).*?(?=[;}])', item)
-        pct = txt_module.fdns_module.hand_module.re.search(r'(?<=pct=).*?(?=[;}])', item)
-        rf = txt_module.fdns_module.hand_module.re.search(r'(?<=rf=).*?(?=[;}])', item)
-        ri = txt_module.fdns_module.hand_module.re.search(r'(?<=ri=).*?(?=[;}])', item)
-        rua = txt_module.fdns_module.hand_module.re.search(r'(?<=rua=).*?(?=[;}])', item)
-        ruf = txt_module.fdns_module.hand_module.re.search(r'(?<=ruf=).*?(?=[;}])', item)
-        sp = txt_module.fdns_module.hand_module.re.search(r'(?<=sp=).*?(?=[;}])', item)
-        value_lst = [aspf, adkim, fo, p, pct, rf, ri, rua, ruf, sp]
-        df_dmarc = txt_module.get_df_new_values_assigned(df_dmarc, index, value_lst, dictionary)
+        aspf = txt.fdns.handle.re.search(r'(?<=aspf=).*?(?=[;}])', item)
+        adkim = txt.fdns.handle.re.search(r'(?<=adkim=).*?(?=[;}])', item)
+        fo = txt.fdns.handle.re.search(r'(?<=fo=).*?(?=[;}])', item)
+        p = txt.fdns.handle.re.search(r'(?<=p=).*?(?=[;}])', item)
+        pct = txt.fdns.handle.re.search(r'(?<=pct=).*?(?=[;}])', item)
+        rf = txt.fdns.handle.re.search(r'(?<=rf=).*?(?=[;}])', item)
+        ri = txt.fdns.handle.re.search(r'(?<=ri=).*?(?=[;}])', item)
+        rua = txt.fdns.handle.re.search(r'(?<=rua=).*?(?=[;}])', item)
+        ruf = txt.fdns.handle.re.search(r'(?<=ruf=).*?(?=[;}])', item)
+        sp = txt.fdns.handle.re.search(r'(?<=sp=).*?(?=[;}])', item)
+        attr_value_lst = [aspf, adkim, fo, p, pct, rf, ri, rua, ruf, sp]
+        df_dmarc = txt.get_df_new_values_assigned(df_dmarc, index, attr_value_lst, attr_default_value)
     df_dmarc.drop(['Value'], axis = 1, inplace = True)
     return df_dmarc
