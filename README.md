@@ -1,4 +1,4 @@
-# *api_project_sonar.* Packages to handle Project Sonar databases
+# API for Project Sonar databases.
 
 Auhtor: AndreaGiuliani-Git
 
