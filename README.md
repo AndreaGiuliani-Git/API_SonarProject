@@ -1,4 +1,4 @@
-# API for Project Sonar databases.
+# API for Project Sonar
 
 Auhtor: AndreaGiuliani-Git
 
